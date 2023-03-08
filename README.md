@@ -16,6 +16,6 @@ npm run dev
 ## Deployment
 
 ```bash
-npm build # Builds the project
-npm start # Starts the built project
+npm run build # Builds the project
+npm run start # Starts the built project
 ```
