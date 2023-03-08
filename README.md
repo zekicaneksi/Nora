@@ -4,7 +4,7 @@ Personal assistant app.
 
 ### Technologies
 
-Node.js
+Node.js<br>
 Material UI (MUI)
 
 ## Development
