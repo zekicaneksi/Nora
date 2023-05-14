@@ -23,6 +23,7 @@ app.use(bodyParser.json());
 app.use(
   cors({
     origin: process.env.FRONTEND_ADDRESS,
+    credentials: true,
   })
 );
 
@@ -71,6 +72,7 @@ app.post("/signup", async (req, res) => {
       username: username,
       password: hashedPassword,
     });
+    req.session.user = { username: username };
     res.status(200).send();
   }
 });
@@ -84,8 +86,15 @@ app.post("/signin", async (req, res) => {
   else {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) return res.status(401).send("password");
-    else return res.status(200).send();
+    else {
+      req.session.user = { username: user.username };
+      return res.status(200).send();
+    }
   }
+});
+
+app.get("/getUserInfo", checkSession, async (req, res) => {
+  return res.status(200).send(JSON.stringify({ user: req.session.user }));
 });
 
 // Start Express

@@ -1,15 +1,8 @@
 import Header from "@/components/home/Header";
-import { Button, Typography, Box } from "@mui/material";
+import {Typography, Box } from "@mui/material";
+import User from "@/context/User";
 
-import {backendGET} from "@/utils/backendFetch"
-
-export default function Home() {
-
-  function testBackend(){
-    backendGET('/testBackend', (response) => {
-      console.log(response);
-    });
-  }
+function Page() {
 
   return (
     <>
@@ -27,7 +20,14 @@ export default function Home() {
       >
         <Typography>Hello</Typography>
       </Box>
-      <Button onClick={testBackend}>Test backend</Button>
     </>
+  );
+}
+
+export default function Home() {
+  return (
+    <User>
+      <Page />
+    </User>
   );
 }

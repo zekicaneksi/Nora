@@ -1,5 +1,9 @@
-import Box from "@mui/material/Box";
 import * as React from "react";
+
+import { IUserContext, UserContext } from "@/context/User";
+import { useContext } from "react";
+
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import Grow from "@mui/material/Grow";
@@ -9,6 +13,9 @@ import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 
 export default function DropDownMenu() {
+
+  const user = useContext(UserContext) as IUserContext;
+
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLButtonElement>(null);
 
@@ -45,7 +52,7 @@ export default function DropDownMenu() {
         onClick={handleToggle}
         sx={{ color: "black", border: "2px solid" }}
       >
-        My Nickname
+        {user.username}
       </Button>
       <Popper
         open={open}
