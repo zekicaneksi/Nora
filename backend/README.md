@@ -12,7 +12,7 @@ A Mongodb database needs to be setup.
 Create the `.env` file with these variables;
 
 ```text
-PORT=3000
+PORT=3001
 MONGODB_CONNECTION_STRING=mongodb://localhost:27017/
 ```
 
