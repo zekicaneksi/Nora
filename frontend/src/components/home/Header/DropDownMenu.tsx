@@ -71,6 +71,7 @@ export default function DropDownMenu() {
         placement="bottom-start"
         transition
         disablePortal
+        sx={{zIndex: 1}}
       >
         {({ TransitionProps, placement }) => (
           <Grow

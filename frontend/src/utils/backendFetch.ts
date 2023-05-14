@@ -24,5 +24,5 @@ export async function backendPOST(
       body: JSON.stringify(data),
     }
   );
-  callback(response);
+  await callback(response);
 }
