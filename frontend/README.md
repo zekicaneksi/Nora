@@ -5,6 +5,10 @@
 - React (Next.js)
 - Material UI (MUI)
 
+## Requirements
+
+- `npm install` to install node packages.
+
 ## Development
 
 ```bash

@@ -1,1 +1,0 @@
-This directory contains the design files that is made before starting to build the project.
