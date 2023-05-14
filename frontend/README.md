@@ -14,7 +14,7 @@
 Create the `.env` file with these variables;
 
 ```text
-NEXT_PUBLIC_BACKEND_ADDRESS=http://localhost:3001/
+NEXT_PUBLIC_BACKEND_ADDRESS=http://localhost:3001
 ```
 
 ## Development

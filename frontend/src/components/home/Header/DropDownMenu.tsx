@@ -11,10 +11,12 @@ import Paper from "@mui/material/Paper";
 import Popper from "@mui/material/Popper";
 import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
+import { useRouter } from "next/navigation";
+import { backendGET } from "@/utils/backendFetch";
 
 export default function DropDownMenu() {
-
   const user = useContext(UserContext) as IUserContext;
+  const router = useRouter();
 
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLButtonElement>(null);
@@ -34,6 +36,14 @@ export default function DropDownMenu() {
     setOpen(false);
   };
 
+  const handleLogout = () => {
+    backendGET("/signout", (response) => {
+      if (response.status === 200) {
+        router.push("/sign");
+      }
+    });
+  };
+
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = React.useRef(open);
   React.useEffect(() => {
@@ -50,7 +60,7 @@ export default function DropDownMenu() {
         ref={anchorRef}
         id="composition-button"
         onClick={handleToggle}
-        sx={{ color: "black", border: "2px solid" }}
+        sx={{ color: "black", border: "2px solid", textTransform: "none" }}
       >
         {user.username}
       </Button>
@@ -75,7 +85,7 @@ export default function DropDownMenu() {
                 <MenuList autoFocusItem={open} id="composition-menu">
                   <MenuItem onClick={handleClose}>Item1</MenuItem>
                   <MenuItem onClick={handleClose}>Item2</MenuItem>
-                  <MenuItem onClick={handleClose}>Logout</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </MenuList>
               </ClickAwayListener>
             </Paper>

@@ -97,6 +97,18 @@ app.get("/getUserInfo", checkSession, async (req, res) => {
   return res.status(200).send(JSON.stringify({ user: req.session.user }));
 });
 
+app.get("/signout", checkSession, async (req, res) => {
+  req.session.user = null;
+  req.session.save(function (err) {
+    if (err) return res.status(500).send();
+
+    req.session.regenerate(function (err) {
+      if (err) return res.status(500).send();
+      else return res.status(200).send()
+    });
+  });
+});
+
 // Start Express
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
