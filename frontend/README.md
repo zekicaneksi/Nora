@@ -9,6 +9,14 @@
 
 - `npm install` to install node packages.
 
+### Environment Variables
+
+Create the `.env` file with these variables;
+
+```text
+NEXT_PUBLIC_BACKEND_ADDRESS=http://localhost:3001/
+```
+
 ## Development
 
 ```bash
