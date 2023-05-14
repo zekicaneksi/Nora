@@ -5,6 +5,8 @@
 - Mongodb
 - Node.js
 
+A Mongodb database needs to be setup.
+
 ## Environment Variables
 
 Create the `.env` file with these variables;
