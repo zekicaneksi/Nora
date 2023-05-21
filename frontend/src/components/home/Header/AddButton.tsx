@@ -73,7 +73,23 @@ export default function AddButton(props: {
   }
 
   async function addTodoBox() {
-    console.log("adding todo box:" + dialogValue);
+    let path = "/home";
+    if (router.query?.fieldPath && Array.isArray(router.query.fieldPath))
+      path += "/" + router.query.fieldPath.join("/");
+    const label = dialogValue;
+
+    await backendPOST(
+      "/addTodoBox",
+      { fieldPath: path, label: label },
+      async (response) => {
+        const res =  await response.json()
+        props.setFieldData((old: any) => {
+          const toReturn = { ...old };
+          toReturn.todoBoxes?.push({label: label, _id: res.id, todoItems: []});
+          return toReturn;
+        });
+      }
+    );
   }
 
   async function addFieldBox() {
@@ -83,6 +99,7 @@ export default function AddButton(props: {
     if (router.query?.fieldPath && Array.isArray(router.query.fieldPath))
       path += "/" + router.query.fieldPath.join("/");
     const label = dialogValue.replace(/ /g, "-");
+
     await backendPOST(
       "/addField",
       { fieldPath: path, label: label },
@@ -93,7 +110,7 @@ export default function AddButton(props: {
         } else if (response.status === 200) {
           props.setFieldData((old: any) => {
             const toReturn = { ...old };
-            toReturn.fields?.push({ label: label, path: path + '/' + label });
+            toReturn.fields?.push({ label: label, path: path + "/" + label });
             return toReturn;
           });
         }
@@ -121,6 +138,7 @@ export default function AddButton(props: {
       }
     } else {
       await addTodoBox();
+      setDialogLoading(false);
     }
 
     setDialogOpen(false);
