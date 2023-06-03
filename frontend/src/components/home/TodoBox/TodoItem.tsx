@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import SettingsIcon from "@mui/icons-material/Settings";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import RemoveDialog from "./Dialogs/RemoveDialog";
 import ContentDialog from "./Dialogs/ContentDialog";
 import OptionsDialog from "./Dialogs/OptionsDialog";
@@ -26,8 +27,11 @@ import { backendPOST } from "@/utils/backendFetch";
 export default function TodoItem(props: {
   todoItem: todoItem;
   setTodoItem: (remove: boolean, item: todoItem) => void;
+  recurringCount: number;
 }) {
-  const { todoItem, setTodoItem } = props;
+  const { todoItem, setTodoItem, recurringCount } = props;
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [openDialog, setOpenDialog] = useState<
     "" | "settings" | "remove" | "content"
@@ -53,13 +57,49 @@ export default function TodoItem(props: {
     setOpenDialog("remove");
   }
 
+  function handleRecurringClick(event: React.MouseEvent<SVGSVGElement>) {
+    event.stopPropagation();
+
+    setLoading(true);
+
+    let toSet = { ...todoItem };
+    const lastCheck = toSet.options.recurring.lastCheck;
+    toSet.options.recurring.lastCheck =
+      lastCheck === 0
+        ? todoItem.options.recurring.startDate +
+          todoItem.options.recurring.frequency * 60000
+        : todoItem.options.recurring.lastCheck +
+          todoItem.options.recurring.frequency * 60000;
+
+    backendPOST(
+      "/changeTodoItemLastCheck",
+      {
+        todoId: todoItem._id,
+        lastCheckValue: toSet.options.recurring.lastCheck,
+      },
+      (response) => {
+        if (response.status === 200) {
+          setTodoItem(false, {
+            ...toSet,
+          });
+          setLoading(false);
+        }
+      }
+    );
+  }
+
   async function handleOptionsDialogClose(
     apply: boolean,
     values?: {
       todoItemId: string;
       labelValue: string;
       mustAttendValue: boolean;
-      recurringValue: string;
+      recurringValue: {
+        isRecurring: boolean;
+        startDate: number;
+        frequency: number;
+        lastCheck: number;
+      };
     }
   ) {
     if (apply && values) {
@@ -158,18 +198,37 @@ export default function TodoItem(props: {
           marginTop: "2px",
           marginBottom: "2px",
           borderRadius: "2.5px",
-          ...(todoItem.options.mustBeAttended && {
-            animation: `${mustAttendBackground} 1s infinite alternate`,
-          }),
+          ...(recurringCount === 0 ? { opacity: 0.5 } : {}),
+          ...(todoItem.options.mustBeAttended &&
+            (recurringCount > 0 || recurringCount === -1) && {
+              animation: `${mustAttendBackground} 1s infinite alternate`,
+            }),
           "&:hover": {
             cursor: "pointer",
             backgroundColor: "lightblue",
           },
+          ...(loading
+            ? {
+                opacity: 0.5,
+                "&:hover": {
+                  cursor: "not-allowed",
+                },
+              }
+            : {}),
         }}
         onClick={handleItemClick}
       >
-        <Typography>{todoItem.label}</Typography>
+        <Typography>
+          {recurringCount !== -1 ? "(" + recurringCount + ") " : ""}
+          {todoItem.label}
+        </Typography>
         <Box sx={{ display: "flex" }}>
+          {recurringCount > 0 && (
+            <CheckCircleOutlineIcon
+              sx={iconSx}
+              onClick={handleRecurringClick}
+            />
+          )}
           <SettingsIcon sx={iconSx} onClick={handleSettingsClick} />
           <RemoveCircleOutlineIcon sx={iconSx} onClick={handleRemoveClick} />
         </Box>

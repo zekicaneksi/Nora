@@ -27,6 +27,15 @@ export default function TodoBox(props: {
   const [addItemLoading, setAddItemLoading] = useState<boolean>(false);
   const [todoItemsLoading, setTodoItemsLoading] = useState<boolean>(true);
 
+  const [time, setTime] = useState(Date.now()); // Rerender every now and then to refresh recurrings
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(Date.now()), 15000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   useEffect(() => {
     if (!todoItemsLoading) return;
     backendPOST(
@@ -86,11 +95,35 @@ export default function TodoBox(props: {
   }
 `;
 
+  function calculateRecurringCount(todoItem: todoItem) {
+    const { startDate, frequency, lastCheck } = todoItem.options.recurring;
+
+    if (!todoItem.options.recurring.isRecurring) return -1;
+    let localTime = Date.now();
+
+    if (localTime < startDate) return 0;
+    if (lastCheck === 0) return (localTime - startDate) / 60000 / frequency;
+    else return (localTime - lastCheck) / 60000 / frequency;
+  }
+
+
+  let isBoxMustAttended = false;
+
+  let todoItemsList = todoItems?.map((item: todoItem) => {
+    const recurringCount = Math.floor(calculateRecurringCount(item));
+    if (item.options.mustBeAttended && (recurringCount > 0 || recurringCount === -1)) isBoxMustAttended = true;
+    return (
+      <Grid item key={item._id} xs={12}>
+        <TodoItem todoItem={item} setTodoItem={setTodoItem} recurringCount={recurringCount}/>
+      </Grid>
+    );
+  });
+
   return (
     <Card
       sx={{
         borderRadius: 0,
-        ...(todoItems.find((item) => item.options.mustBeAttended) && {
+        ...(!isBoxMustAttended ? {} : {
           animation: `${mustAttendBackground} 1s infinite alternate`,
         }),
       }}
@@ -108,15 +141,7 @@ export default function TodoBox(props: {
               }}
             />
           ) : (
-            <Grid container>
-              {todoItems?.map((item: todoItem) => {
-                return (
-                  <Grid item key={item._id} xs={12}>
-                    <TodoItem todoItem={item} setTodoItem={setTodoItem} />
-                  </Grid>
-                );
-              })}
-            </Grid>
+            <Grid container>{todoItemsList}</Grid>
           )}
           <Box
             sx={{

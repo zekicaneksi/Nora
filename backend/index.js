@@ -243,16 +243,39 @@ app.get("/getField/*", checkSession, async (req, res) => {
         (elem) => elem.path === mainLevelFields[i].path
       );
       if (index === -1) return res.status(404).send();
-      if (
-        await database
-          .collection("todoItems")
-          .findOne({
-            _id: { $in: todoItemIds },
-            "options.mustBeAttended": true,
-          })
-      )
-        field.fields[index].mustAttend = true;
-      else field.fields[index].mustAttend = false;
+      const todoItemArr = await database
+        .collection("todoItems")
+        .find({
+          _id: { $in: todoItemIds },
+          "options.mustBeAttended": true,
+        })
+        .toArray();
+      if (todoItemArr.length > 0) {
+        if (
+          todoItemArr.findIndex((item) => {
+            if (!item.options.recurring.isRecurring) return true;
+            else {
+              let localTime = Date.now();
+
+              const startDate = item.options.recurring.startDate;
+              const frequency = item.options.recurring.frequency;
+              const lastCheck = item.options.recurring.lastCheck;
+
+              let count;
+              if (localTime < startDate) count = 0;
+              else {
+                if (lastCheck === 0)
+                  count = (localTime - startDate) / 60000 / frequency;
+                else count = (localTime - lastCheck) / 60000 / frequency;
+              }
+              count = Math.floor(count);
+              if (count > 0) return true;
+              else return false;
+            }
+          }) !== -1
+        )
+          field.fields[index].mustAttend = true;
+      } else field.fields[index].mustAttend = false;
     }
 
     return res.status(200).send(JSON.stringify(field));
@@ -291,7 +314,12 @@ app.post("/addTodoItem", checkSession, async (req, res) => {
     label: label,
     options: {
       mustBeAttended: false,
-      recurring: "---",
+      recurring: {
+        isRecurring: false,
+        startDate: 0,
+        frequency: 0,
+        lastCheck: 0,
+      },
     },
     content: "",
   });
@@ -377,6 +405,22 @@ app.post("/changeTodoItemOptions", checkSession, async (req, res) => {
           recurring: recurringValue,
         },
       },
+    }
+  );
+  return res.status(200).send();
+});
+
+app.post("/changeTodoItemLastCheck", checkSession, async (req, res) => {
+  const { todoId, lastCheckValue } = req.body;
+  const doesUserHave = await database.collection("fields").findOne({
+    userId: new ObjectId(req.session.user.userId),
+    "todoBoxes.todoItems.todoItemId": new ObjectId(todoId),
+  });
+  if (!doesUserHave) return res.status(404).send();
+  await database.collection("todoItems").updateOne(
+    { _id: new ObjectId(todoId) },
+    {
+      $set: { "options.recurring.lastCheck": lastCheckValue },
     }
   );
   return res.status(200).send();

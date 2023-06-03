@@ -14,7 +14,12 @@ export interface todoItem {
   label: string;
   options: {
     mustBeAttended: boolean;
-    recurring: string;
+    recurring: {
+      isRecurring: boolean,
+      startDate: number,
+      frequency: number,
+      lastCheck: number
+    }
   };
   content?: string;
 }
