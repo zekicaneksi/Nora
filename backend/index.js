@@ -230,17 +230,29 @@ app.get("/getField/*", checkSession, async (req, res) => {
         const actualField = nestedFields.find(
           (elem) => elem.path === nestedField.path
         );
-        todoItemIds = todoItemIds.concat(recursivelyGetTodoItemIds(actualField));
+        todoItemIds = todoItemIds.concat(
+          recursivelyGetTodoItemIds(actualField)
+        );
       });
       return todoItemIds;
     }
 
-    for(let i = 0; i < mainLevelFields.length; i++){
-      let todoItemIds = recursivelyGetTodoItemIds(mainLevelFields[i])
-      let index = field.fields.findIndex((elem) => elem.path === mainLevelFields[i].path)
+    for (let i = 0; i < mainLevelFields.length; i++) {
+      let todoItemIds = recursivelyGetTodoItemIds(mainLevelFields[i]);
+      let index = field.fields.findIndex(
+        (elem) => elem.path === mainLevelFields[i].path
+      );
       if (index === -1) return res.status(404).send();
-      if(await database.collection("todoItems").findOne({ _id: { $in: todoItemIds }, 'options.mustBeAttended' : true })) field.fields[index].mustAttend = true
-      else field.fields[index].mustAttend = false
+      if (
+        await database
+          .collection("todoItems")
+          .findOne({
+            _id: { $in: todoItemIds },
+            "options.mustBeAttended": true,
+          })
+      )
+        field.fields[index].mustAttend = true;
+      else field.fields[index].mustAttend = false;
     }
 
     return res.status(200).send(JSON.stringify(field));
@@ -368,6 +380,13 @@ app.post("/changeTodoItemOptions", checkSession, async (req, res) => {
     }
   );
   return res.status(200).send();
+});
+
+app.post("/checkUTCTime", async (req, res) => {
+  const { time } = req.body;
+
+  if (Math.abs(Date.now() - time) > 180000) return res.status(200).send("BAD");
+  else return res.status(200).send("GOOD");
 });
 
 // Start Express
