@@ -23,8 +23,8 @@ export default function FieldBox(props: { field: field }) {
         router.push(field.path);
       }}
       sx={{
+        overflow: "visible",
         "&:hover": {
-          border: "1px solid #00FF00",
           backgroundColor: "lightblue",
           cursor: "pointer",
         },
@@ -37,7 +37,9 @@ export default function FieldBox(props: { field: field }) {
           }),
         }}
       >
-        <Typography>{field.label.replace(/-/g, " ")}</Typography>
+        <Typography textAlign={"center"}>
+          {field.label.replace(/-/g, " ")}
+        </Typography>
       </CardContent>
     </Card>
   );
