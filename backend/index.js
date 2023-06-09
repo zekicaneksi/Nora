@@ -433,6 +433,58 @@ app.post("/checkUTCTime", async (req, res) => {
   else return res.status(200).send("GOOD");
 });
 
+app.post("/removeTodoBox", checkSession, async (req, res) => {
+  const { todoId, fieldPath } = req.body;
+
+  const todoBox = (
+    await database
+      .collection("fields")
+      .aggregate([
+        {
+          $match: {
+            userId: new ObjectId(req.session.user.userId),
+            path: fieldPath,
+          },
+        },
+        {
+          $unwind: "$todoBoxes",
+        },
+        {
+          $match: {
+            "todoBoxes._id": new ObjectId(todoId),
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$todoBoxes",
+          },
+        },
+      ])
+      .toArray()
+  )[0];
+
+  const todoItemIds = todoBox.todoItems.map((item) => item.todoItemId);
+  await database
+    .collection("todoItems")
+    .deleteMany({ _id: { $in: todoItemIds } });
+  const updateTodoBox = await database.collection("fields").updateOne(
+    {
+      userId: new ObjectId(req.session.user.userId),
+      path: fieldPath,
+    },
+    {
+      $pull: {
+        todoBoxes: {
+          _id: new ObjectId(todoId),
+        },
+      },
+    }
+  );
+
+  if (updateTodoBox.matchedCount === 0) return res.status(404).send();
+  else return res.status(200).send();
+});
+
 // Start Express
 app.listen(port, () => {
   console.log(`listening on port ${port}`);

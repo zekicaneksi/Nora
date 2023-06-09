@@ -12,13 +12,16 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import TodoItem from "./TodoItem";
+import TodoBoxRemoveDialog from "./Dialogs/TodoBoxRemoveDialog";
 
 export default function TodoBox(props: {
   fieldPath: string;
   todoBox: todoBox;
+  onRemove: (id: string) => void
 }) {
-  const { fieldPath, todoBox } = props;
+  const { fieldPath, todoBox, onRemove } = props;
 
   const [addItemField, setAddItemField] = useState<string>("");
   const [errorInfo, setErrorInfo] = useState<string>("");
@@ -26,6 +29,9 @@ export default function TodoBox(props: {
 
   const [addItemLoading, setAddItemLoading] = useState<boolean>(false);
   const [todoItemsLoading, setTodoItemsLoading] = useState<boolean>(true);
+
+  const [isRemoveBoxDialogOpen, setIsRemoveBoxDialogOpen] =
+    useState<boolean>(false);
 
   const [time, setTime] = useState(Date.now()); // Rerender every now and then to refresh recurrings
 
@@ -86,15 +92,6 @@ export default function TodoBox(props: {
     });
   }
 
-  const mustAttendBackground = keyframes`
-  to {
-    background-color: white;
-  }
-  to {
-    background-color: grey;
-  }
-`;
-
   function calculateRecurringCount(todoItem: todoItem) {
     const { startDate, frequency, lastCheck } = todoItem.options.recurring;
 
@@ -106,81 +103,141 @@ export default function TodoBox(props: {
     else return (localTime - lastCheck) / 60000 / frequency;
   }
 
+  function removeTodoBox(remove: boolean) {
+    if (!remove) {
+      setIsRemoveBoxDialogOpen(false);
+      return;
+    } else {
+      backendPOST(
+        "/removeTodoBox",
+        { todoId: todoBox._id, fieldPath: fieldPath },
+        async (response) => {
+          if (response.status === 200) {
+            onRemove(todoBox._id)
+            setIsRemoveBoxDialogOpen(false);
+          }
+        }
+      );
+    }
+  }
+
+  const mustAttendBackground = keyframes`
+  to {
+    background-color: white;
+  }
+  to {
+    background-color: grey;
+  }
+`;
 
   let isBoxMustAttended = false;
 
   let todoItemsList = todoItems?.map((item: todoItem) => {
     const recurringCount = Math.floor(calculateRecurringCount(item));
-    if (item.options.mustBeAttended && (recurringCount > 0 || recurringCount === -1)) isBoxMustAttended = true;
+    if (
+      item.options.mustBeAttended &&
+      (recurringCount > 0 || recurringCount === -1)
+    )
+      isBoxMustAttended = true;
     return (
       <Grid item key={item._id} xs={12}>
-        <TodoItem todoItem={item} setTodoItem={setTodoItem} recurringCount={recurringCount}/>
+        <TodoItem
+          todoItem={item}
+          setTodoItem={setTodoItem}
+          recurringCount={recurringCount}
+        />
       </Grid>
     );
   });
 
   return (
-    <Card
-      sx={{
-        borderRadius: 0,
-        ...(!isBoxMustAttended ? {} : {
-          animation: `${mustAttendBackground} 1s infinite alternate`,
-        }),
-      }}
-    >
-      <CardContent>
-        <Typography sx={{ textAlign: "center" }}>{todoBox.label}</Typography>
+    <>
+      {isRemoveBoxDialogOpen && <TodoBoxRemoveDialog onClose={removeTodoBox} />}
+      <Card
+        sx={{
+          borderRadius: 0,
+          ...(!isBoxMustAttended
+            ? {}
+            : {
+                animation: `${mustAttendBackground} 1s infinite alternate`,
+              }),
+        }}
+      >
         <CardContent>
-          {todoItemsLoading ? (
-            <CircularProgress
-              sx={{
-                position: "relative",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-              }}
-            />
-          ) : (
-            <Grid container>{todoItemsList}</Grid>
-          )}
           <Box
             sx={{
+              position: "relative",
               display: "flex",
               justifyContent: "center",
-              alignItems: "center",
-              marginTop: "15px",
             }}
           >
-            <TextField
-              placeholder="add new item"
-              variant="standard"
-              autoComplete="off"
-              value={addItemField}
-              onChange={(event) => {
-                setAddItemField(event.target.value);
-              }}
-              disabled={addItemLoading ? true : false}
-            />
-            <AddCircleOutlineIcon
+            <Typography>{todoBox.label}</Typography>
+            <RemoveCircleOutlineIcon
               sx={{
-                color: addItemLoading ? "grey" : "black",
-                "&:hover": addItemLoading
-                  ? {}
-                  : {
-                      color: "lightblue",
-                      cursor: "pointer",
-                    },
+                position: "absolute",
+                right: 0,
+                "&:hover": {
+                  color: "grey",
+                  cursor: "pointer",
+                },
               }}
-              onClick={handleAddItem}
+              onClick={() => {
+                setIsRemoveBoxDialogOpen(true);
+              }}
             />
           </Box>
-          {errorInfo !== "" && (
-            <Typography color={"#d32f2f"} variant="body2">
-              {errorInfo}
-            </Typography>
-          )}
+          <CardContent>
+            {todoItemsLoading ? (
+              <CircularProgress
+                sx={{
+                  position: "relative",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%,-50%)",
+                }}
+              />
+            ) : (
+              <Grid container>{todoItemsList}</Grid>
+            )}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "15px",
+              }}
+            >
+              <TextField
+                placeholder="add new item"
+                variant="standard"
+                autoComplete="off"
+                value={addItemField}
+                onChange={(event) => {
+                  setAddItemField(event.target.value);
+                }}
+                disabled={addItemLoading ? true : false}
+              />
+              <AddCircleOutlineIcon
+                sx={{
+                  color: addItemLoading ? "grey" : "black",
+                  "&:hover": addItemLoading
+                    ? {}
+                    : {
+                        color: "lightblue",
+                        cursor: "pointer",
+                      },
+                }}
+                onClick={handleAddItem}
+              />
+            </Box>
+            {errorInfo !== "" && (
+              <Typography color={"#d32f2f"} variant="body2">
+                {errorInfo}
+              </Typography>
+            )}
+          </CardContent>
         </CardContent>
-      </CardContent>
-    </Card>
+      </Card>
+    </>
   );
 }

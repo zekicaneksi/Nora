@@ -15,11 +15,11 @@ export interface todoItem {
   options: {
     mustBeAttended: boolean;
     recurring: {
-      isRecurring: boolean,
-      startDate: number,
-      frequency: number,
-      lastCheck: number
-    }
+      isRecurring: boolean;
+      startDate: number;
+      frequency: number;
+      lastCheck: number;
+    };
   };
   content?: string;
 }
@@ -61,6 +61,19 @@ function Page() {
       }
     });
   }, [router]);
+
+  function removeTodoBox(id: string) {
+    setFieldData((prev: any) => {
+      let toReturn = { ...prev };
+      const index = toReturn.todoBoxes?.findIndex(
+        (todoBox: todoBox) => todoBox._id === id
+      );
+      if (index !== undefined && index > -1) {
+        toReturn.todoBoxes?.splice(index, 1);
+      }
+      return toReturn;
+    });
+  }
 
   const fields = (
     <Box
@@ -108,7 +121,11 @@ function Page() {
           {fieldData?.todoBoxes.map((elem: todoBox) => {
             return (
               <Grid item key={elem._id} xs={12} sm={6} md={4} lg={3}>
-                <TodoBox fieldPath={fieldData.path} todoBox={elem} />
+                <TodoBox
+                  fieldPath={fieldData.path}
+                  todoBox={elem}
+                  onRemove={removeTodoBox}
+                />
               </Grid>
             );
           })}
