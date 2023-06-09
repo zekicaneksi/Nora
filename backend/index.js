@@ -485,6 +485,43 @@ app.post("/removeTodoBox", checkSession, async (req, res) => {
   else return res.status(200).send();
 });
 
+app.post("/removeField", checkSession, async (req, res) => {
+  const { path } = req.body;
+
+  const field = await database.collection("fields").findOne({
+    userId: new ObjectId(req.session.user.userId),
+    path: path,
+  });
+
+  if (
+    field.fields.length !== 0 ||
+    field.todoBoxes.length !== 0 ||
+    path === "/home"
+  )
+    return res.status(400).send();
+
+  await database.collection("fields").updateOne(
+    {
+      userId: new ObjectId(req.session.user.userId),
+      path: path.substring(0, path.lastIndexOf("/")),
+    },
+    {
+      $pull: {
+        fields: {
+          path: path,
+        },
+      },
+    }
+  );
+
+  await database.collection("fields").deleteOne({
+    userId: new ObjectId(req.session.user.userId),
+    path: path,
+  });
+
+  return res.status(200).send();
+});
+
 // Start Express
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
