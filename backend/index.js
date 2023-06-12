@@ -82,6 +82,15 @@ async function addFieldForUser(userId, fieldPath, label) {
   }
 }
 
+async function addLogForUser(userId, logText) {
+  await database
+    .collection("logs")
+    .findOneAndUpdate(
+      { userId: userId },
+      { $push: { logs: { text: logText, date: Date.now() } } }
+    );
+}
+
 // Routes
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
@@ -113,6 +122,10 @@ app.post("/signup", async (req, res) => {
     });
 
     await addFieldForUser(result.insertedId, "/", "home");
+    await database
+      .collection("logs")
+      .insertOne({ userId: result.insertedId, logs: [] });
+    await addLogForUser(result.insertedId, "signed up");
     req.session.user = { username: username, userId: result.insertedId };
     res.status(200).send();
   }
@@ -129,6 +142,7 @@ app.post("/signin", async (req, res) => {
     if (!isPasswordCorrect) return res.status(401).send("password");
     else {
       req.session.user = { username: user.username, userId: user._id };
+      await addLogForUser(user._id, "signed in");
       return res.status(200).send();
     }
   }
@@ -163,6 +177,10 @@ app.post("/addField", checkSession, async (req, res) => {
     label
   );
   if (result !== "success") return res.status(400).send("exists");
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Added field:" + label + " to path:" + fieldPath
+  );
   return res.status(200).send();
 });
 
@@ -295,9 +313,13 @@ app.post("/addTodoBox", checkSession, async (req, res) => {
     { path: fieldPath, userId: new ObjectId(req.session.user.userId) },
     { $push: { todoBoxes: { _id: generatedId, label: label, todoItems: [] } } }
   );
-  if (inserted.matchedCount === 1)
+  if (inserted.matchedCount === 1) {
+    await addLogForUser(
+      new ObjectId(req.session.user.userId),
+      "Added todoBox:" + label + " to path:" + fieldPath
+    );
     return res.status(200).send(JSON.stringify({ id: generatedId }));
-  else return res.status(404).send();
+  } else return res.status(404).send();
 });
 
 app.post("/addTodoItem", checkSession, async (req, res) => {
@@ -308,7 +330,12 @@ app.post("/addTodoItem", checkSession, async (req, res) => {
     userId: new ObjectId(req.session.user.userId),
     path: fieldPath,
   });
-  if (!field || field.todoBoxes.find((elem) => elem._id === todoBoxId) === -1)
+
+  if (
+    !field ||
+    field.todoBoxes.find((elem) => elem._id.toString() === todoBoxId) ===
+      undefined
+  )
     return res.status(400).send();
   const inserted = await database.collection("todoItems").insertOne({
     label: label,
@@ -335,6 +362,15 @@ app.post("/addTodoItem", checkSession, async (req, res) => {
   const insertedItem = await database
     .collection("todoItems")
     .findOne({ _id: inserted.insertedId });
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Added todoItem:" +
+      label +
+      " to path:" +
+      fieldPath +
+      " to field:" +
+      field.todoBoxes.find((elem) => elem._id.toString() === todoBoxId).label
+  );
   return res.status(200).send(JSON.stringify(insertedItem));
 });
 
@@ -364,6 +400,18 @@ app.post("/changeTodoItemContent", checkSession, async (req, res) => {
   await database
     .collection("todoItems")
     .updateOne({ _id: new ObjectId(todoId) }, { $set: { content: content } });
+
+  const todoItem = await database
+    .collection("todoItems")
+    .findOne({ _id: new ObjectId(todoId) });
+
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Changed todoItem content of:" +
+      todoItem.label +
+      " in path:" +
+      doesUserHave.path
+  );
   return res.status(200).send();
 });
 
@@ -381,7 +429,16 @@ app.post("/removeTodoItem", checkSession, async (req, res) => {
       },
     }
   );
+
   if (removeFromField.matchedCount === 0) return res.status(404).send();
+  const todoItem = await database
+    .collection("todoItems")
+    .findOne({ _id: new ObjectId(todoId) });
+
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Removed todoItem:" + todoItem.label
+  );
   await database
     .collection("todoItems")
     .deleteOne({ _id: new ObjectId(todoId) });
@@ -407,6 +464,17 @@ app.post("/changeTodoItemOptions", checkSession, async (req, res) => {
       },
     }
   );
+  const todoItem = await database
+    .collection("todoItems")
+    .findOne({ _id: new ObjectId(todoId) });
+
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Changed todoItem options of:" +
+      todoItem.label +
+      " in path:" +
+      doesUserHave.path
+  );
   return res.status(200).send();
 });
 
@@ -422,6 +490,14 @@ app.post("/changeTodoItemLastCheck", checkSession, async (req, res) => {
     {
       $set: { "options.recurring.lastCheck": lastCheckValue },
     }
+  );
+  const todoItem = await database
+    .collection("todoItems")
+    .findOne({ _id: new ObjectId(todoId) });
+
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Checked todoItem:" + todoItem.label + " in path:" + doesUserHave.path
   );
   return res.status(200).send();
 });
@@ -482,7 +558,13 @@ app.post("/removeTodoBox", checkSession, async (req, res) => {
   );
 
   if (updateTodoBox.matchedCount === 0) return res.status(404).send();
-  else return res.status(200).send();
+  else {
+    await addLogForUser(
+      new ObjectId(req.session.user.userId),
+      "Removed todoBox:" + todoBox.label + " in path:" + fieldPath
+    );
+    return res.status(200).send();
+  }
 });
 
 app.post("/removeField", checkSession, async (req, res) => {
@@ -519,7 +601,25 @@ app.post("/removeField", checkSession, async (req, res) => {
     path: path,
   });
 
+  await addLogForUser(
+    new ObjectId(req.session.user.userId),
+    "Removed field:" + field.path
+  );
   return res.status(200).send();
+});
+
+app.get("/getLogs", checkSession, async (req, res) => {
+  
+  const page = parseInt(req.query.page)
+
+  const logs = (await database
+    .collection("logs")
+    .find(
+      { userId: new ObjectId(req.session.user.userId) }
+    ).project({ logs: { $slice: [-(((page+1)*6)-1), 6] } }).toArray())[0];
+  
+  if (logs) return res.status(200).send(JSON.stringify(logs));
+  else return res.status(404).send();
 });
 
 // Start Express
