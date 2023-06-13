@@ -213,6 +213,9 @@ app.get("/getField/*", checkSession, async (req, res) => {
               connectToField: "path",
               as: "children",
               depthField: "level",
+              restrictSearchWithMatch: {
+                userId: new ObjectId(req.session.user.userId),
+              },
             },
           },
           {
@@ -609,15 +612,16 @@ app.post("/removeField", checkSession, async (req, res) => {
 });
 
 app.get("/getLogs", checkSession, async (req, res) => {
-  
-  const page = parseInt(req.query.page)
+  const page = parseInt(req.query.page);
 
-  const logs = (await database
-    .collection("logs")
-    .find(
-      { userId: new ObjectId(req.session.user.userId) }
-    ).project({ logs: { $slice: [-(((page+1)*6)-1), 6] } }).toArray())[0];
-  
+  const logs = (
+    await database
+      .collection("logs")
+      .find({ userId: new ObjectId(req.session.user.userId) })
+      .project({ logs: { $slice: [-((page + 1) * 6 - 1), 6] } })
+      .toArray()
+  )[0];
+
   if (logs) return res.status(200).send(JSON.stringify(logs));
   else return res.status(404).send();
 });
