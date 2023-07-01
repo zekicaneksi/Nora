@@ -2,7 +2,7 @@ export async function backendGET(
   route: string,
   callback: (response: Response) => void
 ) {
-  const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_ADDRESS + route, {
+  const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_ADDRESS + '/api' + route, {
     credentials: 'include'
   });
   callback(response);

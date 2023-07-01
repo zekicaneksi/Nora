@@ -92,7 +92,7 @@ async function addLogForUser(userId, logText) {
 }
 
 // Routes
-app.post("/signup", async (req, res) => {
+app.post("/api/signup", async (req, res) => {
   const { username, password } = req.body;
 
   const checkUsernameSpaces = username.indexOf(" ") !== -1;
@@ -131,7 +131,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/signin", async (req, res) => {
+app.post("/api/signin", async (req, res) => {
   const { username, password } = req.body;
   const collection = database.collection("users");
 
@@ -148,11 +148,11 @@ app.post("/signin", async (req, res) => {
   }
 });
 
-app.get("/getUserInfo", checkSession, async (req, res) => {
+app.get("/api/getUserInfo", checkSession, async (req, res) => {
   return res.status(200).send(JSON.stringify({ user: req.session.user }));
 });
 
-app.get("/signout", checkSession, async (req, res) => {
+app.get("/api/signout", checkSession, async (req, res) => {
   req.session.user = null;
   req.session.save(function (err) {
     if (err) return res.status(500).send();
@@ -164,7 +164,7 @@ app.get("/signout", checkSession, async (req, res) => {
   });
 });
 
-app.post("/addField", checkSession, async (req, res) => {
+app.post("/api/addField", checkSession, async (req, res) => {
   let { fieldPath, label } = req.body;
   if (
     fieldPath.match(/^[a-zA-Z0-9/-]+$/) === null ||
@@ -184,7 +184,7 @@ app.post("/addField", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.get("/getField/*", checkSession, async (req, res) => {
+app.get("/api/getField/*", checkSession, async (req, res) => {
   const fieldPath = req.path.substring(req.path.indexOf("/", 1));
   const collection = database.collection("fields");
   const field = await collection.findOne({
@@ -303,7 +303,7 @@ app.get("/getField/*", checkSession, async (req, res) => {
   } else return res.status(404).send();
 });
 
-app.post("/addTodoBox", checkSession, async (req, res) => {
+app.post("/api/addTodoBox", checkSession, async (req, res) => {
   let { fieldPath, label } = req.body;
   if (
     fieldPath.match(/^[a-zA-Z0-9/-]+$/) === null ||
@@ -325,7 +325,7 @@ app.post("/addTodoBox", checkSession, async (req, res) => {
   } else return res.status(404).send();
 });
 
-app.post("/addTodoItem", checkSession, async (req, res) => {
+app.post("/api/addTodoItem", checkSession, async (req, res) => {
   const { fieldPath, todoBoxId, label } = req.body;
 
   if (label.match(/^[a-zA-Z0-9 /-]+$/) === null) return res.status(400).send();
@@ -377,7 +377,7 @@ app.post("/addTodoItem", checkSession, async (req, res) => {
   return res.status(200).send(JSON.stringify(insertedItem));
 });
 
-app.post("/getTodoItems", checkSession, async (req, res) => {
+app.post("/api/getTodoItems", checkSession, async (req, res) => {
   const { path, todoBoxId } = req.body;
   const field = await database
     .collection("fields")
@@ -392,7 +392,7 @@ app.post("/getTodoItems", checkSession, async (req, res) => {
   return res.status(200).send(JSON.stringify(todoItems));
 });
 
-app.post("/changeTodoItemContent", checkSession, async (req, res) => {
+app.post("/api/changeTodoItemContent", checkSession, async (req, res) => {
   const { todoId, content } = req.body;
 
   const doesUserHave = await database.collection("fields").findOne({
@@ -418,7 +418,7 @@ app.post("/changeTodoItemContent", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.post("/removeTodoItem", checkSession, async (req, res) => {
+app.post("/api/removeTodoItem", checkSession, async (req, res) => {
   const { todoId } = req.body;
 
   const removeFromField = await database.collection("fields").updateOne(
@@ -448,7 +448,7 @@ app.post("/removeTodoItem", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.post("/changeTodoItemOptions", checkSession, async (req, res) => {
+app.post("/api/changeTodoItemOptions", checkSession, async (req, res) => {
   const { todoId, labelValue, mustAttendValue, recurringValue } = req.body;
   const doesUserHave = await database.collection("fields").findOne({
     userId: new ObjectId(req.session.user.userId),
@@ -481,7 +481,7 @@ app.post("/changeTodoItemOptions", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.post("/changeTodoItemLastCheck", checkSession, async (req, res) => {
+app.post("/api/changeTodoItemLastCheck", checkSession, async (req, res) => {
   const { todoId, lastCheckValue } = req.body;
   const doesUserHave = await database.collection("fields").findOne({
     userId: new ObjectId(req.session.user.userId),
@@ -505,14 +505,14 @@ app.post("/changeTodoItemLastCheck", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.post("/checkUTCTime", async (req, res) => {
+app.post("/api/checkUTCTime", async (req, res) => {
   const { time } = req.body;
 
   if (Math.abs(Date.now() - time) > 180000) return res.status(200).send("BAD");
   else return res.status(200).send("GOOD");
 });
 
-app.post("/removeTodoBox", checkSession, async (req, res) => {
+app.post("/api/removeTodoBox", checkSession, async (req, res) => {
   const { todoId, fieldPath } = req.body;
 
   const todoBox = (
@@ -570,7 +570,7 @@ app.post("/removeTodoBox", checkSession, async (req, res) => {
   }
 });
 
-app.post("/removeField", checkSession, async (req, res) => {
+app.post("/api/removeField", checkSession, async (req, res) => {
   const { path } = req.body;
 
   const field = await database.collection("fields").findOne({
@@ -611,7 +611,7 @@ app.post("/removeField", checkSession, async (req, res) => {
   return res.status(200).send();
 });
 
-app.get("/getLogs", checkSession, async (req, res) => {
+app.get("/api/getLogs", checkSession, async (req, res) => {
   const page = parseInt(req.query.page);
 
   const logs = (
