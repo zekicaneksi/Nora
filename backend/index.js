@@ -185,7 +185,7 @@ app.post("/api/addField", checkSession, async (req, res) => {
 });
 
 app.get("/api/getField/*", checkSession, async (req, res) => {
-  const fieldPath = req.path.substring(req.path.indexOf("/", 1));
+  const fieldPath = req.path.substring(req.path.indexOf("/", 5));
   const collection = database.collection("fields");
   const field = await collection.findOne({
     userId: new ObjectId(req.session.user.userId),
