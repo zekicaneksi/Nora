@@ -14,7 +14,7 @@ export async function backendPOST(
   callback: (response: Response) => void
 ) {
   const response = await fetch(
-    process.env.NEXT_PUBLIC_BACKEND_ADDRESS + route,
+    process.env.NEXT_PUBLIC_BACKEND_ADDRESS + '/api' +route,
     {
       method: "POST",
       credentials: 'include',
