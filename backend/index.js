@@ -489,7 +489,10 @@ app.post("/api/changeTodoItemLastCheck", checkSession, async (req, res) => {
   });
   if (!doesUserHave) return res.status(404).send();
   await database.collection("todoItems").updateOne(
-    { _id: new ObjectId(todoId) },
+    {
+      _id: new ObjectId(todoId),
+      "options.recurring.lastCheck": { $lt: Date.now() + 300000 },
+    },
     {
       $set: { "options.recurring.lastCheck": lastCheckValue },
     }
