@@ -7,20 +7,22 @@ import Box from "@mui/material/Box";
 import AddButton from "./AddButton";
 import { fieldData } from "@/pages/home/[[...fieldPath]]";
 import { Dispatch, SetStateAction } from "react";
+import { useTheme } from "@mui/material/styles";
 
 export default function BreadCrumbs(props: {
   setFieldData: Dispatch<SetStateAction<fieldData | undefined>>;
 }) {
   const router = useRouter();
+  const theme = useTheme()
 
-  const typographyColor = "black";
-  const linkColor = "#b0acac";
+  const typographyColor = theme.palette.primary.main;
+  const linkColor = theme.palette.secondary.main;
 
   return (
     <Box
       sx={{
         width: "100%",
-        background: "#5b5959",
+        background: theme.palette.background.default,
         display: "flex",
       }}
     >

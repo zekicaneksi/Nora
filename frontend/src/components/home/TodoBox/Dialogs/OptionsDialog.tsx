@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Typography,
   Box,
+  useTheme,
 } from "@mui/material";
 import { useState } from "react";
 
@@ -38,6 +39,8 @@ export default function OptionsDialog(props: {
   ) => void;
 }) {
   const { todoItem, onClose } = props;
+
+  const theme = useTheme();
 
   const [labelValue, setLabelValue] = useState<string>(props.todoItem.label);
   const [mustAttendValue, setMustAttendValue] = useState<string>(
@@ -159,7 +162,7 @@ export default function OptionsDialog(props: {
                       : {}),
                   }}
                 >
-                  <Box sx={{ display: "flex", gap: 2 }}>
+                  <Box sx={{ display: "flex", gap: 2 , '& input': {backgroundColor: theme.palette.background.default}}}>
                     <Typography whiteSpace={"nowrap"}>Start Date:</Typography>
                     <DatePicker
                       selected={new Date(recurringStartDate)}
@@ -184,6 +187,7 @@ export default function OptionsDialog(props: {
                     <input
                       type="time"
                       value={dateTime}
+                      style={{backgroundColor: theme.palette.background.default}}
                       onChange={(event) => {
                         setRecurringStartDate((prevState) => {
                           let [hour, minute] = event.target.value.split(":");

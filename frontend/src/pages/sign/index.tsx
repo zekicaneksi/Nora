@@ -10,6 +10,7 @@ import {
   Grid,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 
 function InputComponent(props: {
@@ -44,6 +45,7 @@ function InputComponent(props: {
 
 export default function Sign() {
   const router = useRouter();
+  const theme = useTheme()
 
   const [username, setUsername] = useState<string>("");
   const [usernameHelperText, setUsernameHelperText] = useState<string>("");
@@ -121,6 +123,7 @@ export default function Sign() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: theme.palette.background.default
       }}
     >
       <Card>

@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
   keyframes,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -22,6 +23,8 @@ export default function TodoBox(props: {
   onRemove: (id: string) => void;
 }) {
   const { fieldPath, todoBox, onRemove } = props;
+
+  const theme = useTheme()
 
   const [addItemField, setAddItemField] = useState<string>("");
   const [errorInfo, setErrorInfo] = useState<string>("");
@@ -117,10 +120,7 @@ export default function TodoBox(props: {
 
   const mustAttendBackground = keyframes`
   to {
-    background-color: white;
-  }
-  to {
-    background-color: grey;
+    background-color: ${theme.palette.background.glow};
   }
 `;
 
@@ -172,7 +172,7 @@ export default function TodoBox(props: {
                 position: "absolute",
                 right: 0,
                 "&:hover": {
-                  color: "grey",
+                  color: "lightblue",
                   cursor: "pointer",
                 },
               }}

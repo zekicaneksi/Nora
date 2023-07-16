@@ -203,6 +203,7 @@ function Page() {
             justifyContent: "space-evenly",
             alignItems: "center",
             flex: 1,
+            backgroundColor: theme.palette.background.default
           }}
         >
           <Typography variant={"h3"}>Field is empty</Typography>
@@ -230,6 +231,8 @@ function Page() {
           sx={{
             display: "flex",
             flexDirection: isScreenBelowMedium ? "column" : "row",
+            backgroundColor: theme.palette.background.default,
+            flex: 1
           }}
         >
           <Box

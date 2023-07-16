@@ -1,19 +1,17 @@
-import { Card, CardContent, Typography, keyframes } from "@mui/material";
+import { Card, CardContent, Typography, keyframes, useTheme } from "@mui/material";
 import { useRouter } from "next/router";
 
 import { field } from "@/pages/home/[[...fieldPath]]";
 
 export default function FieldBox(props: { field: field }) {
   const router = useRouter();
+  const theme = useTheme()
 
   const { field } = props;
 
   const mustAttendBackground = keyframes`
   to {
-    background-color: white;
-  }
-  to {
-    background-color: #c03939;
+    background-color: ${theme.palette.background.glow};
   }
 `;
 

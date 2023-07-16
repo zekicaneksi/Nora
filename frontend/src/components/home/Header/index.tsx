@@ -25,7 +25,7 @@ export default function Header(props: {
     <Box>
       <Box
         sx={{
-          backgroundColor: "grey",
+          backgroundColor: theme.palette.background.default,
           width: "100%",
           display: "flex",
         }}

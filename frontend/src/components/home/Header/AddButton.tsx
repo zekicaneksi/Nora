@@ -16,6 +16,7 @@ import {
   Grid,
   TextField,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { backendPOST } from "@/utils/backendFetch";
 import { useRouter } from "next/router";
@@ -28,6 +29,7 @@ export default function AddButton(props: {
   const anchorRef = React.useRef<HTMLButtonElement>(null);
 
   const router = useRouter();
+  const theme = useTheme();
 
   const [dialogOpen, setDialogOpen] = React.useState<boolean>(false);
   const [dialogValue, setDialogValue] = React.useState<string>("");
@@ -82,10 +84,14 @@ export default function AddButton(props: {
       "/addTodoBox",
       { fieldPath: path, label: label },
       async (response) => {
-        const res =  await response.json()
+        const res = await response.json();
         props.setFieldData((old: any) => {
           const toReturn = { ...old };
-          toReturn.todoBoxes?.push({label: label, _id: res.id, todoItems: []});
+          toReturn.todoBoxes?.push({
+            label: label,
+            _id: res.id,
+            todoItems: [],
+          });
           return toReturn;
         });
       }
@@ -176,7 +182,7 @@ export default function AddButton(props: {
               {dialogInfo !== "" && (
                 <Grid item xs={12}>
                   <Typography
-                    color={"#d32f2f"}
+                    color={theme.palette.warning.main}
                     variant="body1"
                     textAlign={"center"}
                   >
@@ -207,7 +213,7 @@ export default function AddButton(props: {
           ref={anchorRef}
           id="composition-button"
           onClick={handleToggle}
-          sx={{ color: "black", border: "2px solid", textTransform: "none" }}
+          sx={{ border: "2px solid", textTransform: "none" }}
         >
           +
         </Button>
@@ -228,7 +234,7 @@ export default function AddButton(props: {
                   placement === "bottom-start" ? "left top" : "left bottom",
               }}
             >
-              <Paper sx={{ backgroundColor: "grey", borderRadius: "0" }}>
+              <Paper sx={{ borderRadius: "0" }}>
                 <ClickAwayListener onClickAway={handleClose}>
                   <MenuList autoFocusItem={open} id="composition-menu">
                     <MenuItem onClick={handleAddFieldBox}>Field Box</MenuItem>

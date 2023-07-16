@@ -1,5 +1,5 @@
 import { todoItem } from "@/pages/home/[[...fieldPath]]";
-import { Box, Typography, keyframes } from "@mui/material";
+import { Box, Typography, keyframes, useTheme } from "@mui/material";
 import { useState } from "react";
 import SettingsIcon from "@mui/icons-material/Settings";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
@@ -15,6 +15,8 @@ export default function TodoItem(props: {
   recurringCount: number;
 }) {
   const { todoItem, setTodoItem, recurringCount } = props;
+
+  const theme = useTheme()
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -162,10 +164,7 @@ export default function TodoItem(props: {
 
   const mustAttendBackground = keyframes`
   to {
-    background-color: white;
-  }
-  to {
-    background-color: #c03939;
+    background-color: ${theme.palette.background.default};
   }
 `;
 
@@ -185,7 +184,8 @@ export default function TodoItem(props: {
           ...(recurringCount === 0 ? { opacity: 0.5 } : {}),
           ...(todoItem.options.mustBeAttended &&
             (recurringCount > 0 || recurringCount === -1) && {
-              animation: `${mustAttendBackground} 1s infinite alternate`,
+              //animation: `${mustAttendBackground} 1s infinite alternate`,
+              backgroundColor: theme.palette.background.default
             }),
           "&:hover": {
             cursor: "pointer",
@@ -202,7 +202,7 @@ export default function TodoItem(props: {
         }}
         onClick={handleItemClick}
       >
-        <Typography>
+        <Typography sx={{wordBreak: 'break-all'}}>
           {recurringCount !== -1 ? "(" + recurringCount + ") " : ""}
           {todoItem.label}
         </Typography>

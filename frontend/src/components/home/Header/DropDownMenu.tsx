@@ -25,6 +25,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  useTheme,
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -37,6 +38,7 @@ interface Log {
 export default function DropDownMenu() {
   const user = useContext(UserContext) as IUserContext;
   const router = useRouter();
+  const theme = useTheme()
 
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLButtonElement>(null);
@@ -186,7 +188,7 @@ export default function DropDownMenu() {
           ref={anchorRef}
           id="composition-button"
           onClick={handleToggle}
-          sx={{ color: "black", border: "2px solid", textTransform: "none" }}
+          sx={{ border: "2px solid", textTransform: "none" }}
         >
           {user.username}
         </Button>
@@ -207,7 +209,7 @@ export default function DropDownMenu() {
                   placement === "bottom-start" ? "left top" : "left bottom",
               }}
             >
-              <Paper sx={{ backgroundColor: "grey", borderRadius: "0" }}>
+              <Paper sx={{ borderRadius: "0" }}>
                 <ClickAwayListener onClickAway={handleClose}>
                   <MenuList autoFocusItem={open} id="composition-menu">
                     <MenuItem
