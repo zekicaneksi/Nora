@@ -133,7 +133,7 @@ export default function TodoBox(props: {
   let isBoxMustAttended = false;
 
   let todoItemsList = todoItems?.map((item: todoItem) => {
-    const recurringCount = Math.floor(calculateRecurringCount(item));
+    const recurringCount = Math.ceil(calculateRecurringCount(item));
     if (
       item.options.mustBeAttended &&
       (recurringCount > 0 || recurringCount === -1)

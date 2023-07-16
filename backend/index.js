@@ -289,7 +289,7 @@ app.get("/api/getField/*", checkSession, async (req, res) => {
                   count = (localTime - startDate) / 60000 / frequency;
                 else count = (localTime - lastCheck) / 60000 / frequency;
               }
-              count = Math.floor(count);
+              count = Math.ceil(count);
               if (count > 0) return true;
               else return false;
             }
