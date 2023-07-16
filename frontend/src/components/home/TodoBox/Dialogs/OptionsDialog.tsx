@@ -32,7 +32,7 @@ export default function OptionsDialog(props: {
         startDate: number;
         frequency: number;
         isRecurring: boolean;
-        lastCheck: number
+        lastCheck: number;
       };
     }
   ) => void;
@@ -72,7 +72,7 @@ export default function OptionsDialog(props: {
         startDate: recurringStartDate.getTime(),
         frequency: recurringFrequency,
         isRecurring: isRecurringValue === "yes" ? true : false,
-        lastCheck: todoItem.options.recurring.lastCheck
+        lastCheck: todoItem.options.recurring.lastCheck,
       },
     });
   }
@@ -87,7 +87,7 @@ export default function OptionsDialog(props: {
   function frequencyFieldOnChange(event: React.ChangeEvent<HTMLInputElement>) {
     const value = parseInt(event.target.value);
     if (value) setRecurringFrequency(value);
-    else setRecurringFrequency(0)
+    else setRecurringFrequency(0);
   }
 
   return (
@@ -147,15 +147,47 @@ export default function OptionsDialog(props: {
                     label="Yes"
                   />
                 </RadioGroup>
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Typography whiteSpace={"nowrap"}>Start Date:</Typography>
-                  <DatePicker
-                    selected={new Date(recurringStartDate)}
-                    onChange={(date) => {
-                      if (date !== null)
+                <Box
+                  sx={{
+                    ...(isRecurringValue === "no"
+                      ? {
+                          opacity: 0.5,
+                          "&:hover": {
+                            cursor: "not-allowed",
+                          },
+                        }
+                      : {}),
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Typography whiteSpace={"nowrap"}>Start Date:</Typography>
+                    <DatePicker
+                      selected={new Date(recurringStartDate)}
+                      onChange={(date) => {
+                        if (date !== null)
+                          setRecurringStartDate((prevState) => {
+                            let [hour, minute] = dateTime.split(":");
+                            let toReturn = new Date(date);
+                            toReturn.setHours(
+                              parseInt(hour),
+                              parseInt(minute),
+                              0,
+                              0
+                            );
+                            return toReturn;
+                          });
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
+                    <Typography whiteSpace={"nowrap"}>Start Time:</Typography>
+                    <input
+                      type="time"
+                      value={dateTime}
+                      onChange={(event) => {
                         setRecurringStartDate((prevState) => {
-                          let [hour, minute] = dateTime.split(":");
-                          let toReturn = new Date(date);
+                          let [hour, minute] = event.target.value.split(":");
+                          let toReturn = new Date(prevState);
                           toReturn.setHours(
                             parseInt(hour),
                             parseInt(minute),
@@ -164,37 +196,18 @@ export default function OptionsDialog(props: {
                           );
                           return toReturn;
                         });
-                    }}
-                  />
-                </Box>
-                <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
-                  <Typography whiteSpace={"nowrap"}>Start Time:</Typography>
-                  <input
-                    type="time"
-                    value={dateTime}
-                    onChange={(event) => {
-                      setRecurringStartDate((prevState) => {
-                        let [hour, minute] = event.target.value.split(":");
-                        let toReturn = new Date(prevState);
-                        toReturn.setHours(
-                          parseInt(hour),
-                          parseInt(minute),
-                          0,
-                          0
-                        );
-                        return toReturn;
-                      });
-                    }}
-                  ></input>
-                </Box>
-                <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
-                  <Typography whiteSpace={"nowrap"}>Every:</Typography>
-                  <TextField
-                    value={recurringFrequency}
-                    variant="standard"
-                    onChange={frequencyFieldOnChange}
-                  />
-                  <Typography whiteSpace={"nowrap"}>Minutes</Typography>
+                      }}
+                    ></input>
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 2, marginTop: 1 }}>
+                    <Typography whiteSpace={"nowrap"}>Every:</Typography>
+                    <TextField
+                      value={recurringFrequency}
+                      variant="standard"
+                      onChange={frequencyFieldOnChange}
+                    />
+                    <Typography whiteSpace={"nowrap"}>Minutes</Typography>
+                  </Box>
                 </Box>
               </FormControl>
             </Grid>
