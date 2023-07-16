@@ -19,7 +19,7 @@ import TodoBoxRemoveDialog from "./Dialogs/TodoBoxRemoveDialog";
 export default function TodoBox(props: {
   fieldPath: string;
   todoBox: todoBox;
-  onRemove: (id: string) => void
+  onRemove: (id: string) => void;
 }) {
   const { fieldPath, todoBox, onRemove } = props;
 
@@ -32,15 +32,6 @@ export default function TodoBox(props: {
 
   const [isRemoveBoxDialogOpen, setIsRemoveBoxDialogOpen] =
     useState<boolean>(false);
-
-  const [time, setTime] = useState(Date.now()); // Rerender every now and then to refresh recurrings
-
-  useEffect(() => {
-    const interval = setInterval(() => setTime(Date.now()), 15000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
 
   useEffect(() => {
     if (!todoItemsLoading) return;
@@ -99,7 +90,10 @@ export default function TodoBox(props: {
     let localTime = Date.now();
 
     if (localTime < startDate) return 0;
-    if (lastCheck === 0) return (localTime - startDate) / 60000 / frequency;
+    if (lastCheck === 0)
+      return (
+        (localTime - startDate) / 60000 / frequency + 1
+      ); // +1 is for it to be inclusive with the start date
     else return (localTime - lastCheck) / 60000 / frequency;
   }
 
@@ -113,7 +107,7 @@ export default function TodoBox(props: {
         { todoId: todoBox._id, fieldPath: fieldPath },
         async (response) => {
           if (response.status === 200) {
-            onRemove(todoBox._id)
+            onRemove(todoBox._id);
             setIsRemoveBoxDialogOpen(false);
           }
         }
@@ -133,7 +127,8 @@ export default function TodoBox(props: {
   let isBoxMustAttended = false;
 
   let todoItemsList = todoItems?.map((item: todoItem) => {
-    const recurringCount = Math.ceil(calculateRecurringCount(item));
+    const result = calculateRecurringCount(item);
+    const recurringCount = result > 0 ? Math.floor(result) : Math.ceil(result);
     if (
       item.options.mustBeAttended &&
       (recurringCount > 0 || recurringCount === -1)

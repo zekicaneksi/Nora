@@ -32,9 +32,10 @@ export default function FieldBox(props: { field: field }) {
     >
       <CardContent
         sx={{
-          ...(field.mustAttend && {
-            animation: `${mustAttendBackground} 1s infinite alternate`,
-          }),
+          ...(field.closestRecurring !== -1 &&
+            field.closestRecurring <= Date.now() && {
+              animation: `${mustAttendBackground} 1s infinite alternate`,
+            }),
         }}
       >
         <Typography textAlign={"center"}>

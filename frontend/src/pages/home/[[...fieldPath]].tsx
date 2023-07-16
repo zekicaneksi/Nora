@@ -45,7 +45,7 @@ export interface todoBox {
 export interface field {
   label: string;
   path: string;
-  mustAttend: boolean;
+  closestRecurring: number;
 }
 
 export interface fieldData {
@@ -64,6 +64,15 @@ function Page() {
   const [dialogLoading, setDialogLoading] = useState<boolean>(false);
 
   const isScreenBelowMedium = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [time, setTime] = useState(Date.now()); // Rerender every now and then to refresh recurrings
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(Date.now()), 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) return;

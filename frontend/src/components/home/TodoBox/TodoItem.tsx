@@ -51,8 +51,7 @@ export default function TodoItem(props: {
     const lastCheck = toSet.options.recurring.lastCheck;
     toSet.options.recurring.lastCheck =
       lastCheck === 0
-        ? todoItem.options.recurring.startDate +
-          todoItem.options.recurring.frequency * 60000
+        ? todoItem.options.recurring.startDate
         : todoItem.options.recurring.lastCheck +
           todoItem.options.recurring.frequency * 60000;
 

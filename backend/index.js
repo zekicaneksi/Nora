@@ -272,31 +272,29 @@ app.get("/api/getField/*", checkSession, async (req, res) => {
         })
         .toArray();
       if (todoItemArr.length > 0) {
-        if (
-          todoItemArr.findIndex((item) => {
-            if (!item.options.recurring.isRecurring) return true;
-            else {
-              let localTime = Date.now();
+        let closestRecurring = -1;
+        for (let i = 0; i < todoItemArr.length; i++) {
+          const item = todoItemArr[i];
 
-              const startDate = item.options.recurring.startDate;
-              const frequency = item.options.recurring.frequency;
-              const lastCheck = item.options.recurring.lastCheck;
+          if (!item.options.recurring.isRecurring) {
+            closestRecurring = 0;
+            break;
+          } else {
+            const startDate = item.options.recurring.startDate;
+            const frequency = item.options.recurring.frequency;
+            const lastCheck = item.options.recurring.lastCheck;
 
-              let count;
-              if (localTime < startDate) count = 0;
-              else {
-                if (lastCheck === 0)
-                  count = (localTime - startDate) / 60000 / frequency;
-                else count = (localTime - lastCheck) / 60000 / frequency;
-              }
-              count = Math.ceil(count);
-              if (count > 0) return true;
-              else return false;
-            }
-          }) !== -1
-        )
-          field.fields[index].mustAttend = true;
-      } else field.fields[index].mustAttend = false;
+            let closest;
+            if (lastCheck === 0) closest = startDate;
+            else closest = lastCheck + frequency * 60000;
+
+            if (closestRecurring === -1 || closest < closestRecurring)
+              closestRecurring = closest;
+          }
+        }
+
+        field.fields[index].closestRecurring = closestRecurring;
+      } else field.fields[index].closestRecurring = -1;
     }
 
     return res.status(200).send(JSON.stringify(field));
