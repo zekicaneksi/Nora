@@ -16,30 +16,53 @@ export default function RemoveDialog(props: {
 }) {
   const { onClose } = props;
 
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
 
   return (
-    <Dialog open={true} onClose={() => {onClose(false)}} fullWidth={true}>
+    <Dialog
+      open={true}
+      onClose={() => {
+        onClose(false);
+      }}
+      fullWidth={true}
+    >
       <Card>
-        <CardContent sx={{
+        <CardContent
+          sx={{
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             gap: "20px",
-          }}>
+          }}
+        >
           <Typography
             textAlign={"center"}
             marginBottom={"2rem"}
             marginTop={"2rem"}
           >
-            Are sure you want to remove this item?
+            {"Are sure you want to remove the item '" +
+              props.todoItem.label +
+              "' ?"}
           </Typography>
-          {loading && <CircularProgress sx={{alignSelf: 'center'}}/>}
+          {loading && <CircularProgress sx={{ alignSelf: "center" }} />}
           <Box sx={{ display: "flex", flexDirection: "row", gap: "2rem" }}>
-            <Button variant="contained" fullWidth={true} onClick={() => {onClose(true); setLoading(true)}}>
+            <Button
+              variant="contained"
+              fullWidth={true}
+              onClick={() => {
+                onClose(true);
+                setLoading(true);
+              }}
+            >
               Yes
             </Button>
-            <Button variant="contained" fullWidth={true} onClick={() => {onClose(false)}}>
+            <Button
+              variant="contained"
+              fullWidth={true}
+              onClick={() => {
+                onClose(false);
+              }}
+            >
               No
             </Button>
           </Box>
