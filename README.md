@@ -34,17 +34,15 @@ Clicking a note's options button opens a popup which ables you to make the item 
 
 By using must be attended option and reccuring option simultaneously, you can make the item warn you with intervals starting at a specific date. Interval frequency is stated in minutes, ie: 1440 -> a day.
 
-### Reccuring Note
+### Reccuring Notes
 
 ![image](https://github.com/zekicaneksi/Nora/assets/59491631/f6710511-3927-424e-aae7-d632245f43fe)
 
-An example recurring item with attending option set to true. The number in the beginning shows how many times the interval has passed from the last check. Clicking on the check button counts the note as done and stops it from glowing until the next interval.
+In the picture, an example recurring item with attending option set to true is shown. The number in the beginning shows how many times the interval has passed from the last check. Clicking on the check button counts the note as done and stops it from glowing until the next interval.
 
 ### Logs
 
 ![image](https://github.com/zekicaneksi/Nora/assets/59491631/546a2053-7ecf-46ca-8d0b-7f4f628ed4bf)
-
-Users can see the logs if they 
 
 ## Setting up the Project (Development and Deployment)
 
