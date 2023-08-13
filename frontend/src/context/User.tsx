@@ -19,6 +19,7 @@ export const UserContext = createContext<IUserContext | null>(null);
 export default function User(props: { children: JSX.Element | JSX.Element[] }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [username, setUsername] = useState<string>("");
+  const [time, setTime] = useState(Date.now()); // Check if session is valid every now and then
 
   const { children } = props;
 
@@ -33,6 +34,20 @@ export default function User(props: { children: JSX.Element | JSX.Element[] }) {
       }
     });
   }, [router]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(Date.now()), 10000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading === true) return;
+    backendGET("/getUserInfo", async (response) => {
+      if (response.status === 403) router.push("/sign");
+    });
+  }, [loading, time])
 
   useEffect(() => {
     if (username !== "") setLoading(false);

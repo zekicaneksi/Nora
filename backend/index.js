@@ -6,6 +6,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import cors from "cors";
 import session from "express-session";
 import MongoStore from "connect-mongo";
+import { promisify } from 'node:util';
 
 // Env Variables
 const mongodbConnectionUrl = process.env.MONGODB_CONNECTION_STRING;
@@ -27,12 +28,14 @@ app.use(
   })
 );
 
+var sessionStore = MongoStore.create({ mongoUrl: mongodbConnectionUrl })
+
 app.use(
   session({
     secret: process.env.SECRET,
     saveUninitialized: false,
     resave: false,
-    store: MongoStore.create({ mongoUrl: mongodbConnectionUrl }),
+    store: sessionStore,
   })
 );
 
@@ -141,6 +144,19 @@ app.post("/api/signin", async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) return res.status(401).send("password");
     else {
+      // Delete all sessions that user has to prevent concurrent sessions
+      const sessionsOfUser = await database.collection("sessions").find({"$expr": { "$function": {
+        body: 'function(session) { const parsed = JSON.parse(session); return (parsed.user !== undefined && parsed.user.userId === \''+ user._id.toString() +'\')}',
+        args: ["$session"],
+        lang: "js"
+      }  }}).toArray()
+
+      let sessionDestroyP = promisify(sessionStore.destroy.bind(sessionStore));
+      for (let i = 0; i < sessionsOfUser.length; i++){
+        await sessionDestroyP(sessionsOfUser[i]._id)
+      }
+
+      // Signin the user
       req.session.user = { username: user.username, userId: user._id };
       await addLogForUser(user._id, "signed in");
       return res.status(200).send();
