@@ -58,7 +58,7 @@ export default function ContentDialog(props: {
               "& .MuiInputBase-root": {
                 height: "100%",
               },
-              "& textarea": { height: "100% !important" },
+              "& textarea": { height: "100% !important", overflow: "auto !important" },
             }}
           />
           {loading && <CircularProgress sx={{ alignSelf: "center" }} />}
