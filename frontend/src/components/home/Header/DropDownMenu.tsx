@@ -188,7 +188,8 @@ export default function DropDownMenu() {
           ref={anchorRef}
           id="composition-button"
           onClick={handleToggle}
-          sx={{ border: "2px solid", textTransform: "none" }}
+          variant="contained"
+          sx={{ textTransform: "none", backgroundColor: theme.palette.background.paper, color: theme.palette.success.main }}
         >
           {user.username}
         </Button>
